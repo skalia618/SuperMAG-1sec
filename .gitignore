@@ -1,0 +1,8 @@
+__pycache__/
+analysis_vars/
+proj_aux/
+raw/
+spectra/
+*.sh
+slurm-*
+*~
