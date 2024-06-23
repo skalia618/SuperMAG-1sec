@@ -1,15 +1,16 @@
 import numpy as np
+import sys
 
 # Years of data to use in analysis (END_YEAR is inclusive)
 START_YEAR = 2005
 END_YEAR = 2020
 
 # Choice of data subset (-1 indicates full dataset)
-SUBSET = 3
+SUBSET = -1
 
 # Parameters for injected signal (if desired)
 INJECT = True
-EPS = 1e-5
+EPS = 1e-6
 FA = 0.12769081297860388 # in Hz
 POL = [0., 1., 0.] # m = -1,0,1 components of polarization vector
 
@@ -35,15 +36,12 @@ CONFIDENCE = 0.95
 # Parameters for grid to scan for maximum of PDF
 MAX_LOG10EPS = 1.0
 MIN_LOG10EPS = -9.0
-NUM_SCAN = 1000
-SCAN_GRID = np.logspace(MIN_LOG10EPS, MAX_LOG10EPS, NUM_SCAN)
+NUM_EPS = 1000
+SCAN_GRID = np.logspace(MIN_LOG10EPS, MAX_LOG10EPS, NUM_EPS)
 
 # Threshold to set integration cutoff
 # Integration will be cutoff where logpdf = maximum - TAIL_START
 TAIL_START = 10
-
-# Number of samples to use for Monte Carlo integration in candidate analysis
-MC_NUM = 25000
 
 # Whether or not to print progress updates
 VERBOSE = True
@@ -88,3 +86,4 @@ def print_params(include_window = True, include_threshold = True, include_boundp
         print(f'Bound range: ({MIN_FREQ}, {MAX_FREQ})')
         print(f'Confidence level: {CONFIDENCE}')
     print('')
+    sys.stdout.flush()

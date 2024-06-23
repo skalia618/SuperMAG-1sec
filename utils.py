@@ -339,7 +339,7 @@ def calculate_cdf(sf, zf):
 
     # Identify where log PDF decreases to TAIL_START below its max
     max_logpdf = grid_logpdf[max_ind]
-    tail = np.where(grid_logpdf[max_ind:] <= max_logP - TAIL_START)[0] + max_ind
+    tail = np.where(grid_logpdf[max_ind:] <= max_logpdf - TAIL_START)[0] + max_ind
     if len(tail) != 0:
         upper = SCAN_GRID[tail[0]]
     else:
@@ -350,7 +350,7 @@ def calculate_cdf(sf, zf):
     pdf = lambda eps: np.exp(calculate_logpdf(eps, sf, zf) - max_logpdf)
 
     # (Trapezoidal) integrate PDF from epsilon = 0 up to start of tail
-    int_grid = np.linspace(0, upper, NUM_EPS_SCAN)
+    int_grid = np.linspace(0, upper, NUM_EPS)
     grid_pdf = np.insert([pdf(eps) for eps in int_grid[1:]], 0, 0)
     cdf = integrate.cumtrapz(grid_pdf, x = int_grid, initial = 0)
         

@@ -92,7 +92,7 @@ def signal_be(theta, phi, start_sec, end_sec_exclusive, eps = EPS, fA = FA, pol 
         pol[1] * Phi10_phi * zero_timedep +
         pol[2] * Phi11_phi * plus_timedep)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if VERBOSE:
         print_params(include_window = False,
                      include_threshold = False,
@@ -136,12 +136,16 @@ if __name__ == "__main__":
     # Indicator
     I = np.zeros(TOTAL_TIME).astype(np.int32)
 
-    if VERBOSE: print('Initialized workspace arrays\n')
+    if VERBOSE:
+        print('Initialized workspace arrays\n')
+        sys.stdout.flush()
 
     # We loop over stations first so that we can cache
     # station data from one period to the next
     for station in stations:
-        if VERBOSE: print(f'Working on station {station}')
+        if VERBOSE:
+            print(f'Working on station {station}')
+            sys.stdout.flush()
 
         # Get station coordinates
         (lat, lon) = station_coords[station]
@@ -207,7 +211,9 @@ if __name__ == "__main__":
                 H7[s:e] += period_indicator * H7F(we, theta, phi)
 
         weights[station] = station_weights
-        if VERBOSE: print(f'Finished station {station}\n')
+        if VERBOSE:
+            print(f'Finished station {station}\n')
+            sys.stdout.flush()
     
     # Normalize Xi, Hi by total weights
     X1 /= WN
@@ -224,7 +230,9 @@ if __name__ == "__main__":
     H6 /= WE
     H7 /= WE
 
-    if VERBOSE: print('Storing results\n')
+    if VERBOSE:
+        print('Storing results\n')
+        sys.stdout.flush()
 
     # Create output directory
     proj_aux_dir = get_proj_aux_dir()

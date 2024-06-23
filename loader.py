@@ -3,6 +3,7 @@ import numpy as np
 import os
 import re
 import struct
+import sys
 from utils import *
 
 # Location of raw data
@@ -98,7 +99,9 @@ def load_period(station, start_sec, end_sec_exclusive, cache = CACHE):
                 # Load from cache if station-year is already cached
                 bn_year = CACHE[2]
             else:
-                if VERBOSE: print(f'Loading data for {year}')
+                if VERBOSE:
+                    print(f'Loading data for {year}')
+                    sys.stdout.flush()
                 # Load first field if not cached
                 # Open file and skip first header
                 station_file_path = station_year_file(station, year)

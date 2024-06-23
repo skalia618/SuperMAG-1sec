@@ -3,6 +3,7 @@ import os
 from params import *
 from pathlib import Path
 from scipy import stats
+import sys
 from utils import *
 
 def calculate_spectra(ichunk, jchunk):
@@ -36,7 +37,7 @@ def calculate_spectra(ichunk, jchunk):
         smoothed.append(np.sum(power[n:n + len(filter)] * filter))
     return np.array(smoothed)    
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if VERBOSE:
         print_params(include_threshold = False,
                      include_boundparams = False)
@@ -44,7 +45,9 @@ if __name__ == "__main__":
     # Iterate over stationarity chunks
     chunk_list = get_stationarity_chunks()
     for (chunk_ind, start_second, end_second) in chunk_list:
-        if VERBOSE: print(f'Computing chunk {chunk_ind}')
+        if VERBOSE:
+            print(f'Computing chunk {chunk_ind}')
+            sys.stdout.flush()
 
         # Create output directory
         chunk_dir = get_stationarity_chunk_dir(chunk_ind)

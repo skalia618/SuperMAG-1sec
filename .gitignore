@@ -3,6 +3,8 @@ analysis_vars/
 proj_aux/
 raw/
 spectra/
+bounds/
+candidates/
 *.sh
 slurm-*
 *~

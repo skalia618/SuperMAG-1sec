@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import numpy as np
 from pathlib import Path
+import sys
 from utils import *
 
 # Number of cores for parallelization
@@ -21,7 +22,7 @@ def calculate_bounds(coh):
     z = np.load(f'{analysis_vars_dir}/z_{coh}.npy')
 
     # Initiate bound array
-    bound = np.zeros(len(s))
+    bounds = np.zeros(len(s))
 
     # Iterate over frequencies
     for (i, (sf, zf)) in enumerate(zip(s, z)):
@@ -31,18 +32,20 @@ def calculate_bounds(coh):
 
         if cdf_data == None:
             # If CDF calculation fails, set bound = 1
-            bound[i] = 1
+            bounds[i] = 1
         else:
             # Otherwise, find first epsilon where CDF exceeds CONFIDENCE
             int_grid, cdf = cdf_data
             bound_ind = np.searchsorted(cdf, CONFIDENCE)
-            bound[i] = int_grid[bound_ind]
+            bounds[i] = int_grid[bound_ind]
 
-    if VERBOSE: print(f'Coherence time {coh} completed')
+    if VERBOSE:
+        print(f'Coherence time {coh} completed')
+        sys.stdout.flush()
     
-    return bound
+    return bounds
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if VERBOSE: print_params()
 
     analysis_vars_dir = get_analysis_vars_dir()
@@ -71,7 +74,9 @@ if __name__ == "__main__":
     # Merge bounds from different coherence times into single array
     bounds = np.concatenate(bounds)
 
-    if VERBOSE: print('\nStoring results\n')
+    if VERBOSE:
+        print('\nStoring results\n')
+        sys.stdout.flush()
 
     # Store bounds
     Path('bounds').mkdir(exist_ok = True)

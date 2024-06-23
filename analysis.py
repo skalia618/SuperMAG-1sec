@@ -1,17 +1,19 @@
 import numpy as np
 from params import *
 from pathlib import Path
+import sys
 from utils import *
 
 # Start and end coherence times to be computed, if only a subset are required
 # (Can both be set to None, if all are required)
-COH_START = None
+COH_START = 117 // 3
 COH_END = None
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if VERBOSE:
         print_params(include_boundparams = False)
         print('\n')
+        sys.stdout.flush()
 
     # Calculate coherence times and their respective frequency bins
     coherence_times = coherence_times(TOTAL_TIME)
@@ -26,7 +28,9 @@ if __name__ == "__main__":
     # Iterate over coherence times
     coh_zip = zip(coherence_times[COH_START : COH_END], freq_bins[COH_START : COH_END])
     for (coh, (lof, hif_inclusive, df)) in coh_zip:
-        if VERBOSE: print(f'Computing coherence time {coh}\n')
+        if VERBOSE:
+            print(f'Computing coherence time {coh}\n')
+            sys.stdout.flush()
 
         # Calculate number of coherence chunks
         total_chunks = div_ceil(TOTAL_TIME, coh)
@@ -52,7 +56,9 @@ if __name__ == "__main__":
         # 3) Covariance
         # 4) Analysis Variables
         for chunk in range(total_chunks):
-            if VERBOSE: print(f'Beginning coherence chunk {chunk}')
+            if VERBOSE:
+                print(f'Beginning coherence chunk {chunk}')
+                sys.stdout.flush()
 
 
             
@@ -94,7 +100,9 @@ if __name__ == "__main__":
                 data_vector[i - 1 + 5] = mid
                 data_vector[i - 1 + 10] = hi
 
-            if VERBOSE: print('Data vector computed')
+            if VERBOSE:
+                print('Data vector computed')
+                sys.stdout.flush()
 
 
 
@@ -201,7 +209,9 @@ if __name__ == "__main__":
             # Package into one array
             mu = np.ascontiguousarray(np.array([mux, muy, muz]))
 
-            if VERBOSE: print('Mean computed')
+            if VERBOSE:
+                print('Mean computed')
+                sys.stdout.flush()
 
 
 
@@ -254,7 +264,9 @@ if __name__ == "__main__":
                             sigma[:, i + 10, j + 10] += overlap * interpolated_power
                             sigma[:, j + 10, i + 10] += overlap * np.conj(interpolated_power)
 
-            if VERBOSE: print('Variance computed')
+            if VERBOSE:
+                print('Variance computed')
+                sys.stdout.flush()
 
 
 
@@ -266,7 +278,7 @@ if __name__ == "__main__":
 
             # Calculate Y_k = Ainv_k * X_k
             # Shape: (num_frequencies, 15)
-            y = np.einsum("fij, jf -> fi", ainv, data_vector)
+            y = np.einsum('fij, jf -> fi', ainv, data_vector)
 
             # Calculate nu_k = Ainv_k * mu_k
             # Shape: (num_frequencies, 15, 3)
@@ -280,29 +292,35 @@ if __name__ == "__main__":
 
             # Calculate Z_k = Uh_k * Y_k
             # Shape: (num_frequencies, 3)
-            z = np.einsum("fji, fj -> fi", np.conj(u), y)
+            z = np.einsum('fji, fj -> fi', np.conj(u), y)
 
             # Write to s, z, and vh_chunks arrays
             s_chunks[chunk] = s * coh_freqs[:, None] # reintroduce frequency factor
             z_chunks[chunk] = z
             vh_chunks[chunk] = vh
 
-            if VERBOSE: print(f'Chunk {chunk} analysis complete\n')
+            if VERBOSE:
+                print(f'Chunk {chunk} analysis complete\n')
+                sys.stdout.flush()
 
         # Swap axes and store variables
         # s_chunks shape: (num_frequencies, total_chunks, 3)
         # z_chunks shape: (num_frequencies, total_chunks, 3)
-        # vh_chunks shape: (num_frequencies, total_chunks, 3, 3)
+        # v_chunks shape: (num_frequencies, total_chunks, 3, 3) [v is Hermitian conjugate of vh]
         s_chunks = np.ascontiguousarray(np.transpose(s_chunks, (1, 0, 2)))
         z_chunks = np.ascontiguousarray(np.transpose(z_chunks, (1, 0, 2)))
-        vh_chunks = np.ascontiguousarray(np.transpose(vh_chunks, (1, 0, 2, 3)))
+        v_chunks = np.ascontiguousarray(np.transpose(np.conjugate(vh_chunks), (1, 0, 3, 2)))
 
-        if VERBOSE: print(f'Storing results for coherence time {coh}')
+        if VERBOSE:
+            print(f'Storing results for coherence time {coh}')
+            sys.stdout.flush()
 
         np.save(f'{analysis_vars_dir}/s_{coh}', s_chunks.real)
         np.save(f'{analysis_vars_dir}/z_{coh}', z_chunks)
-        np.save(f'{analysis_vars_dir}/vh_{coh}', vh_chunks)
+        np.save(f'{analysis_vars_dir}/v_{coh}', v_chunks)
 
-        if VERBOSE: print(f'Coherence time {coh} complete!\n\n\n')
+        if VERBOSE:
+            print(f'Coherence time {coh} complete!\n\n\n')
+            sys.stdout.flush()
         
     if VERBOSE: print('Done!')
