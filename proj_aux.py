@@ -216,6 +216,7 @@ if __name__ == '__main__':
             sys.stdout.flush()
     
     # Normalize Xi, Hi by total weights
+    np.seterr(invalid = 'ignore') # ignore division errors in cases where there is no data at some time
     X1 /= WN
     X2 /= WN
     X3 /= WE
