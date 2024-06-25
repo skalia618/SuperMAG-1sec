@@ -106,7 +106,7 @@ if __name__ == '__main__':
     # The set of stations to be used for each subset
     # are given by each row of 'permutation.csv'
     if SUBSET != -1:
-        file = open('permutation.csv')
+        file = open(PERMUTATION_PATH)
         reader = csv.reader(file, delimiter = ',')
         for i in range(SUBSET): next(reader)
         stations = next(reader)

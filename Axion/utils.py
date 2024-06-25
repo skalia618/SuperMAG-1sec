@@ -2,6 +2,11 @@ import numpy as np
 from params import *
 from scipy import integrate
 
+# Paths to external data
+RAW_DIR = '../raw'
+STATION_DATA_PATH = '../station_data.txt'
+PERMUTATION_PATH = '../permutation.csv'
+
 # Constants
 FD = 1 / 86164.0905 # sidereal frequency (in Hz)
 VDM = 1e-3 # velocity of DM (in c)

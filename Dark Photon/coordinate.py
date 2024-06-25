@@ -3,8 +3,6 @@ import numpy as np
 import os
 from utils import *
 
-STATION_DATA_PATH = 'station_data.txt'
-
 def load_station_data(path = STATION_DATA_PATH):
     """
     Returns station data

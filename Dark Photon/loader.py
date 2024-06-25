@@ -6,9 +6,6 @@ import struct
 import sys
 from utils import *
 
-# Location of raw data
-RAW_DIR = 'raw'
-
 # The end of each component is marked with the following byte string
 END_OF_FIELD_COMPONENT = bytes([0, 0, 0, 2])
 
