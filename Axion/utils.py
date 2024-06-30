@@ -1,17 +1,18 @@
 import numpy as np
 from params import *
 from scipy import integrate
+from scipy.special import factorial, lpmv
 
 # Paths to external data
 RAW_DIR = '../raw'
 STATION_DATA_PATH = '../station_data.txt'
 PERMUTATION_PATH = '../permutation.csv'
+IGRF_PATH = '../IGRF13coeffs.csv'
 
 # Constants
-FD = 1 / 86164.0905 # sidereal frequency (in Hz)
 VDM = 1e-3 # velocity of DM (in c)
-RHODM = 6.04e7 # density of DM (in nT^2)
-R = 0.0212751 # radius of Earth (in Hz)
+RHODM = 2.305e-42 # density of DM (in GeV^4)
+R = 3.2323e22 # radius of Earth (in GeV^-1)
 SUPERMAG_NAN = 999999. # value used by SUPERMAG to denote absent values
 
 def get_proj_aux_dir():
@@ -138,6 +139,59 @@ def rotate_fields(bn, be, t):
     bep = be * np.cos(t) + bn * np.sin(t)
     return (bnp, bep)
 
+def gh_to_C(g, h):
+    """
+    Converts from g and h Gauss coefficients to C [see Eq. (12) of 2112.09620]
+    
+    Note: C[l] consists of [m = 0 entry, positive m entries, negative m entries]
+    (so that C[l][m] returns correct entry even for negative m)
+    """
+    C = [[]]
+    for l in range(1, len(g)):
+        C.append([])
+        # m = 0 entry
+        C[l].append(np.sqrt(np.pi / (2 * l + 1)) * g[l][0])
+        # Positive m
+        for m in range(1, l + 1):
+            C[l].append((-1) ** m * np.sqrt(2 * np.pi / (2 * l + 1)) * (g[l][m] - 1j * h[l][m]))
+        # Negative m are related to positive m
+        for m in range(-l, 0):
+            C[l].append((-1) ** m * np.conj(C[l][-m]))
+    return C
+
+def interpolate_C(C, seconds, IGRFyears):
+    """
+    Interpolate C coefficients to given seconds
+    Given values should correspond to IGRFyears
+    """
+    # Find seconds corresponding to each IGRF year
+    year_seconds = [year_start_sec(year) for year in IGRFyears]
+    Cinterp = [[]]
+    for l in range(1, len(C)):
+        Cinterp.append([])
+        for m in range(len(C[l])):
+            # Interpolate given l,m mode to desired seconds
+            Cinterp[l].append(np.interp(seconds, year_seconds, C[l][m]))
+    return Cinterp
+
+def Philm_theta(theta, phi, l, m):
+    """
+    Returns theta component of Phi vector spherical harmonic
+    Defined as -dYlm/dphi / sin(theta), where Ylm is scalar spherical harmonic
+    """
+    prefactor = np.sqrt((2 * l + 1) / (4 * np.pi) * factorial(l - m) / factorial(l + m))
+    exp = np.cos(m * phi) + 1j * np.sin(m * phi)
+    return -prefactor * 1j * m * exp * lpmv(m, l, np.cos(theta)) / np.sin(theta)
+
+def Philm_phi(theta, phi, l, m):
+    """
+    Returns phi component of Phi vector spherical harmonic
+    Defined as dYlm/dtheta, where Ylm is scalar spherical harmonic
+    """
+    prefactor = np.sqrt((2 * l + 1) / (4 * np.pi) * factorial(l - m) / factorial(l + m))
+    exp = np.cos(m * phi) + 1j * np.sin(m * phi)
+    return prefactor * exp * (lpmv(m + 1, l, np.cos(theta)) + m * lpmv(m, l, np.cos(theta)) / np.tan(theta))
+
 def calculate_overlap(start1, end1, start2, end2):
     """
     Counts number of overlapping seconds between two intervals
@@ -261,23 +315,6 @@ def div_ceil(a, b):
     """
     return -(a // -b)
 
-def approximate_sidereal(df):
-    """
-    Returns index of multiple of df which is closest to FD
-    """
-    # Initial guess
-    multiple = int(FD / df)
-
-    # Check guess and guess + 1
-    candidate_1 = np.abs((multiple * df) - FD)
-    candidate_2 = np.abs(((multiple + 1) * df) -FD)
-
-    # Return whichever is closest to FD
-    if candidate_1 < candidate_2:
-        return multiple
-    else:
-        return multiple + 1
-
 def find_overlap_chunks(coherence_time, coherence_chunk):
     """
     Computes overlap of a given coherence chunk with all stationarity chunks
@@ -309,37 +346,36 @@ def spectra_freqs(chunk_id):
     freqs_length = (chunk_length - 6 * WINDOW) // DOWNSAMPLE
     return (3 * WINDOW + DOWNSAMPLE * np.arange(freqs_length)) / chunk_length
 
-def calculate_logpdf(eps, sf, zf):
+def calculate_logpdf(g, sf, zf):
     """
-    Calculates posterior log PDF, as in Eq. (63) of 2108.08852
+    Calculates posterior log PDF, as in Eq. (C23) of 2112.09620
     The norm N is set to 1, as it will be fixed when computing the CDF
     """
-    term_1 = np.log(np.sqrt(np.sum(4 * eps ** 2 * sf ** 4 / (3 + eps ** 2 * sf ** 2) ** 2)))
+    term_1 = np.log(np.sqrt(np.sum(4 * g ** 2 * sf ** 4 / (1 + g ** 2 * sf ** 2) ** 2)))
 
-    term_2 = -np.sum(np.log(3 + eps ** 2 * sf ** 2))
+    term_2 = -np.sum(np.log(1 + g ** 2 * sf ** 2))
 
-    term_3 = np.sum(-3 * np.abs(zf) ** 2 / (3 + eps ** 2 * sf ** 2))
+    term_3 = np.sum(-np.abs(zf) ** 2 / (1 + g ** 2 * sf ** 2))
 
     return term_1 + term_2 + term_3
 
 def calculate_cdf(sf, zf):
     """
     Calculates posterior CDF, for given analysis variables
-    sf shape: (number of coherence chunks, 3)
-    zf shape: (number of coherence chunks, 3)
+    sf and zf shapes: (number of coherence chunks)
 
     In order to integrate the PDF, it is important to identify an appropriate integration range.
-    This is done by scanning over epsilon to find the maximum of the PDF.
-    The upper limit of integration is the epsilon where log PDF reaches TAIL_START below its maximum.
+    This is done by scanning over g_agamma to find the maximum of the PDF.
+    The upper limit of integration is the g_agamma where log PDF reaches TAIL_START below its maximum.
 
-    Returns two arrays: (grid of epsilons, CDF calculated along grid)
-    If calculation fails because CDF has significant support above epsilon = 1, returns None
+    Returns two arrays: (grid of g_agamma's, CDF calculated along grid)
+    If calculation fails because CDF has significant support above g_agamma = 10 ** (MAX_LOG10G - 1), returns None
     """
     # Calculate log PDF across epsilon grid and identify maximum
-    grid_logpdf = np.array([calculate_logpdf(eps, sf, zf) for eps in SCAN_GRID])
+    grid_logpdf = np.array([calculate_logpdf(g, sf, zf) for g in SCAN_GRID])
     max_ind = np.argmax(grid_logpdf)
-    # If maximum is above epsilon = 1, exit
-    if SCAN_GRID[max_ind] >= 1:
+    # If maximum is above g_agamma = 10 ** (MAX_LOG10G - 1), exit
+    if SCAN_GRID[max_ind] >= 10 ** (MAX_LOG10G - 1):
         return None
 
     # Identify where log PDF decreases to TAIL_START below its max
@@ -352,13 +388,13 @@ def calculate_cdf(sf, zf):
         return None
 
     # PDF (normalized to equal 1 at maximum)
-    pdf = lambda eps: np.exp(calculate_logpdf(eps, sf, zf) - max_logpdf)
+    pdf = lambda g: np.exp(calculate_logpdf(g, sf, zf) - max_logpdf)
 
-    # (Trapezoidal) integrate PDF from epsilon = 0 up to start of tail
-    int_grid = np.linspace(0, upper, NUM_EPS)
-    grid_pdf = np.insert([pdf(eps) for eps in int_grid[1:]], 0, 0)
+    # (Trapezoidal) integrate PDF from g_agamma = 0 up to start of tail
+    int_grid = np.linspace(0, upper, NUM_G)
+    grid_pdf = np.insert([pdf(g) for g in int_grid[1:]], 0, 0)
     cdf = integrate.cumtrapz(grid_pdf, x = int_grid, initial = 0)
-        
+
     # Normalize so that total integral is 1
     cdf /= cdf[-1]
 

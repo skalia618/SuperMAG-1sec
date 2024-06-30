@@ -15,7 +15,7 @@ def calculate_bounds(coh):
     For each frequency, we compute the posterior CDF, and determine where it exceeds CONFIDENCE.
 
     If calculation fails for a frequency because CDF has
-    significant support above epsilon = 1, bound is set to 1
+    significant support at large g_agamma, bound is set to 10 ** (MAX_LOG10G - 1)
     """
 
     # Load analysis variables for coherence time
@@ -32,8 +32,8 @@ def calculate_bounds(coh):
         cdf_data = calculate_cdf(sf, zf)
 
         if cdf_data == None:
-            # If CDF calculation fails, set bound = 1
-            bounds[i] = 1
+            # If CDF calculation fails, set bound = MAX_LOG10G - 1
+            bounds[i] = 10 ** (MAX_LOG10G - 1)
         else:
             # Otherwise, find first epsilon where CDF exceeds CONFIDENCE
             int_grid, cdf = cdf_data

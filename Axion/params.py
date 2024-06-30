@@ -10,14 +10,16 @@ SUBSET = -1
 
 # Parameters for injected signal (if desired)
 INJECT = False
-EPS = 1e-6
+G_AGAMMA = 1e-10 # in GeV^-1
 FA = 0.12769081297860388 # in Hz
-POL = [0., 1., 0.] # m = -1,0,1 components of polarization vector
 
 # Choice of stationarity time
 # Preset options are 'daily', 'weekly', 'monthly', or 'annual'
 # Alternatively can be a fixed integer, which yields equal-length stationarity chunks
 STATIONARITY_TIME = 'weekly'
+
+# Number of l modes of IGRF coefficients to sum over (for axion signal)
+LMAX = 4
 
 # Window size for smoothing
 WINDOW = 15
@@ -34,10 +36,10 @@ MAX_FREQ = 0.5
 CONFIDENCE = 0.95
 
 # Parameters for grid to scan for maximum of PDF
-MAX_LOG10EPS = 1.0
-MIN_LOG10EPS = -9.0
-NUM_EPS = 1000
-SCAN_GRID = np.logspace(MIN_LOG10EPS, MAX_LOG10EPS, NUM_EPS)
+MAX_LOG10G = -3.0
+MIN_LOG10G = -13.0
+NUM_G = 1000
+SCAN_GRID = np.logspace(MIN_LOG10G, MAX_LOG10G, NUM_G)
 
 # Threshold to set posterior integration cutoff
 # Integration will be cutoff where logpdf = maximum - TAIL_START
@@ -57,6 +59,8 @@ def get_dirname(include_window = True, include_threshold = True, include_boundpa
         dirname += f'_subset{subset}'
     if INJECT:
         dirname += '_injected'
+    if LMAX != 4:
+        dirname += f'_lmax{LMAX}'
     if include_window:
         dirname += f'_window{WINDOW}'
     if include_threshold and THRESHOLD != 0.03:
@@ -73,9 +77,10 @@ def print_params(include_window = True, include_threshold = True, include_boundp
     else:
         print(f'Subset: {SUBSET}')
     if INJECT:
-        print(f'Injected signal: {FA:.4f} Hz, epsilon = {EPS:.1e}, polarization = {POL}')
+        print(f'Injected signal: {FA:.4f} Hz, g_agamma = {G_AGAMMA:.1e}')
     else:
         print(f'Injected signal: False')
+    print(f'Number of IGRF l modes: {LMAX}')
     if include_window:
         print(f'Smoothing window: {WINDOW}')
         if DOWNSAMPLE != WINDOW // 10:

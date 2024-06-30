@@ -325,8 +325,7 @@ def calculate_logpdf(eps, sf, zf):
 def calculate_cdf(sf, zf):
     """
     Calculates posterior CDF, for given analysis variables
-    sf shape: (number of coherence chunks, 3)
-    zf shape: (number of coherence chunks, 3)
+    sf and zf shapes: (number of coherence chunks, 3)
 
     In order to integrate the PDF, it is important to identify an appropriate integration range.
     This is done by scanning over epsilon to find the maximum of the PDF.

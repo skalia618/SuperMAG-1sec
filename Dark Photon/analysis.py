@@ -6,7 +6,7 @@ from utils import *
 
 # Start and end coherence times to be computed, if only a subset are required
 # (Can both be set to None, if all are required)
-COH_START = 117 // 3
+COH_START = None
 COH_END = None
 
 if __name__ == '__main__':
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         coh_freqs = (lof + np.arange(num_frequencies)) * df
 
         # Initialize analysis variables (for each chunk and each frequency)
-        s_chunks = np.zeros((total_chunks, num_frequencies, 3)) + 0j
+        s_chunks = np.zeros((total_chunks, num_frequencies, 3))
         z_chunks = np.zeros((total_chunks, num_frequencies, 3)) + 0j
         vh_chunks = np.zeros((total_chunks, num_frequencies, 3, 3)) + 0j
 
@@ -66,8 +66,8 @@ if __name__ == '__main__':
             data_vector = np.zeros((15, num_frequencies)) + 0j
 
             # Iterate over Xi series
-            for i in [1, 2, 3, 4, 5]:
-                series = np.load(f'{proj_aux_dir}/X{i}.npy', mmap_mode = 'r')
+            for i in range(5):
+                series = np.load(f'{proj_aux_dir}/X{i+1}.npy', mmap_mode = 'r')
 
                 # Start and end of this chunk in the series
                 start = chunk * coh
@@ -96,9 +96,9 @@ if __name__ == '__main__':
                 hi = subseries_fft[2 * approx_sidereal:]
 
                 # Write to data_vector
-                data_vector[i - 1] = lo
-                data_vector[i - 1 + 5] = mid
-                data_vector[i - 1 + 10] = hi
+                data_vector[i] = lo
+                data_vector[i + 5] = mid
+                data_vector[i + 10] = hi
 
             if VERBOSE:
                 print('Data vector computed')
@@ -294,7 +294,7 @@ if __name__ == '__main__':
             # Shape: (num_frequencies, 3)
             z = np.einsum('fji, fj -> fi', np.conj(u), y)
 
-            # Write to s, z, and vh_chunks arrays
+            # Write to s_chunks, z_chunks, and vh_chunks arrays
             s_chunks[chunk] = s * coh_freqs[:, None] # reintroduce frequency factor
             z_chunks[chunk] = z
             vh_chunks[chunk] = vh
@@ -315,7 +315,7 @@ if __name__ == '__main__':
             print(f'Storing results for coherence time {coh}')
             sys.stdout.flush()
 
-        np.save(f'{analysis_vars_dir}/s_{coh}', s_chunks.real)
+        np.save(f'{analysis_vars_dir}/s_{coh}', s_chunks)
         np.save(f'{analysis_vars_dir}/z_{coh}', z_chunks)
         np.save(f'{analysis_vars_dir}/v_{coh}', v_chunks)
 

@@ -26,7 +26,7 @@ def X5F(be, we, theta, phi):
 
 # Functions for auxiliary timeseries [see Eqs. (28) - (34)]
 def H1F(wn, theta, phi):
-    return wn * np.cos(phi)**2
+    return wn * np.cos(phi) ** 2
 
 def H2F(wn, theta, phi):
     return wn * np.sin(phi) * np.cos(phi)
@@ -47,10 +47,8 @@ def H7F(we, theta, phi):
     return we * np.sin(phi) * np.sin(theta) * np.cos(theta)
 
 
+# Functions to compute components of injected signal [see Eq. (1)]
 def signal_bn(theta, phi, start_sec, end_sec_exclusive, eps = EPS, fA = FA, pol = POL):
-    """
-    Compute theta component of injected signal, as in Eq. (1)
-    """
     # Normalize polarization vector
     pol /= np.linalg.norm(pol)
 
@@ -69,9 +67,6 @@ def signal_bn(theta, phi, start_sec, end_sec_exclusive, eps = EPS, fA = FA, pol 
         pol[2] * Phi11_theta * plus_timedep)
 
 def signal_be(theta, phi, start_sec, end_sec_exclusive, eps = EPS, fA = FA, pol = POL):
-    """
-    Compute phi component of injected signal, as in Eq. (1)
-    """
     # Normalize polarization vector
     pol /= np.linalg.norm(pol)
 
@@ -92,6 +87,7 @@ def signal_be(theta, phi, start_sec, end_sec_exclusive, eps = EPS, fA = FA, pol 
         pol[1] * Phi10_phi * zero_timedep +
         pol[2] * Phi11_phi * plus_timedep)
 
+
 if __name__ == '__main__':
     if VERBOSE:
         print_params(include_window = False,
@@ -110,6 +106,7 @@ if __name__ == '__main__':
         reader = csv.reader(file, delimiter = ',')
         for i in range(SUBSET): next(reader)
         stations = next(reader)
+        file.close()
 
     # Get stationarity periods
     periods = get_stationarity_chunks()

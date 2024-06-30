@@ -55,7 +55,7 @@ if __name__ == '__main__':
         z = np.load(f'{full_vars_dir}/z_{coh}.npy')
 
         # Build chi-squared variable, fit for degrees of freedom, and turn into p-value/significance
-        Q0 = 2 * np.sum(np.abs(z) ** 2, axis = (1, 2))
+        Q0 = 2 * np.sum(np.abs(z) ** 2, axis = 1)
         dof = chi2.fit(Q0, floc = 0., fscale = 1.)[0]
         p0 = chi2.sf(Q0, dof)
         sigma = np.sqrt(2) * erfcinv(2 * (1 - (1 - p0) ** Nfreq))
@@ -80,9 +80,8 @@ if __name__ == '__main__':
         # Check candidate frequencies
         if CHECK_CANDIDATES and len(freq_inds) > 0:
 
-            # Load s and v variables for full-dataset analysis
+            # Load s variables for full-dataset analysis
             s = np.load(f'{full_vars_dir}/s_{coh}.npy')
-            v = np.load(f'{full_vars_dir}/v_{coh}.npy')
 
             # Initiate list of resampling p-values (for each candidate and each subset)
             pj = np.zeros((len(freq_inds), 4))
@@ -90,24 +89,20 @@ if __name__ == '__main__':
             # Iterate over subsets
             for j in range(4):
 
-                # Load s, z, and v variables for subset analyses
+                # Load s and z variables for subset analyses
                 sj = np.load(f'{subset_vars_dir[j]}/s_{coh}.npy')
                 zj = np.load(f'{subset_vars_dir[j]}/z_{coh}.npy')
-                vj = np.load(f'{subset_vars_dir[j]}/v_{coh}.npy')
 
                 # Test statistic to compare subset analysis with full-dataset analysis
                 # (Should cancel contribution from true signal)
-                W = (np.einsum('fkij, fkj, fkj -> fki', v, 1 / s, z)
-                     - np.einsum('fkij, fkj, fkj -> fki', vj, 1 / sj, zj))
+                W = z / s - zj / sj
 
-                # Covariance matrix of W (for no signal)
-                Sigma = (np.einsum('fkab, fkb, fkcb -> fkac', v, 1 / s ** 2, np.conjugate(v))
-                         + np.einsum('fkab, fkb, fkcb -> fkac', vj, 1 / sj ** 2, np.conjugate(vj)))
+                # Variance of W (for no signal)
+                Sigma = s ** -2 + sj ** -2
 
-                # Invert Sigma, use to normalize W, and turn into chi-squared statistic
-                invstd = np.linalg.inv(np.linalg.cholesky(Sigma))
-                w = np.einsum('fkij, fkj -> fki', invstd, W)
-                Qj = 2 * np.sum(np.abs(w) ** 2, axis = (1, 2))
+                # Normalize W by Sigma, and turn into chi-squared statistic
+                w = W / np.sqrt(Sigma)
+                Qj = 2 * np.sum(np.abs(w) ** 2, axis = 1)
 
                 # For each candidate, turn Qj into p-value
                 # Rather than using chi-squared distribution, we use empirical distribution of Qj

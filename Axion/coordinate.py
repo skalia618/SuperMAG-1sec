@@ -1,3 +1,4 @@
+import csv
 from loader import get_all_stations
 import numpy as np
 import os
@@ -35,6 +36,59 @@ def get_station_coordinates(data = STATION_DATA, stations = get_all_stations()):
         coordinates[station] = (data[ind]['geolat'], data[ind]['geolon'])
     
     return coordinates
+
+def load_IGRFcoeffs(path = IGRF_PATH):
+    """
+    Loads g and h Gauss coefficients (in nT) at five-year intervals
+    First relevant row of data file contains years
+    Other rows contain coefficients for each year (for fixed l,m), plus derivative for current period
+    g coefficients exist for l>=m>=0 (except l=0)
+    h coefficients exist for l>=m>=1
+    """
+    file = open(IGRF_PATH)
+    reader = csv.reader(file, delimiter = ',')
+
+    # Initialize g and h so that g[0][0] and h[0][0] are empty
+    g = [[[]]]
+    h = [[[]]]
+
+    for row in reader:
+        # Load years
+        if row[0] == 'g/h':
+            IGRFyears = [int(x) for x in row[3:-1]]
+            # Instead of last entry, add final year + 5
+            IGRFyears.append(IGRFyears[-1] + 5)
+            IGRFyears = np.array(IGRFyears)
+            # Truncate list beginning at START_YEAR
+            start_ind = np.searchsorted(IGRFyears, START_YEAR)
+            IGRFyears = IGRFyears[start_ind:]
+
+        # Load g values
+        elif row[0] == 'g':
+            l = int(row[1])
+            # Only load if l <= LMAX
+            if l > LMAX: continue
+            m = int(row[2])
+            # Create g[l] if it doesn't already exist
+            if len(g) <= l:
+                g.append([])
+            g[l].append([float(x) for x in row[3:-1]])
+            # Extrapolate coefficient to added year
+            g[l][m].append(g[l][m][-1] + 5 * float(row[-1]))
+            g[l][m] = np.array(g[l][m])[start_ind:]
+
+        # Load h values
+        elif row[0] == 'h':
+            l = int(row[1])
+            if l > LMAX: continue
+            # Create h[l] so that h[l][0] is empty
+            if len(h) <= l:
+                h.append([[]])
+            h[l].append([float(x) for x in row[3:-1]])
+            h[l][m].append(h[l][m][-1] + 5 * float(row[-1]))
+            h[l][m] = np.array(h[l][m])[start_ind:]
+
+    return IGRFyears, g, h
 
 def interpolate_angle(station, seconds, data = STATION_DATA, start_year = START_YEAR):
     """
