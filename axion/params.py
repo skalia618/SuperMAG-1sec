@@ -77,7 +77,7 @@ def print_params(include_window = True, include_threshold = True, include_boundp
     else:
         print(f'Subset: {SUBSET}')
     if INJECT:
-        print(f'Injected signal: {FA:.4f} Hz, g_agamma = {G_AGAMMA:.1e}')
+        print(f'Injected signal: {FA:.4f} Hz, g_agamma = {G_AGAMMA:.1e} GeV^-1')
     else:
         print(f'Injected signal: False')
     print(f'Number of IGRF l modes: {LMAX}')

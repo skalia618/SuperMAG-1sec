@@ -35,7 +35,7 @@ if __name__ == '__main__':
     pcrit = 1 - CONFIDENCE ** (1 / Nfreq)
 
     # Initiate count/lists of candidate frequencies and their p-values,
-    # as well as list of successful frequencies
+    # as well as list of successful frequencies and predicted g_agamma's
     count = 0
     cand_freqs = []
     cand_p0s = []
@@ -43,6 +43,8 @@ if __name__ == '__main__':
     cand_pjs = []
     cand_pfulls = []
     succ_freqs = []
+    succ_gmeans = []
+    succ_gstds = []
 
     # Iterate over coherence times (within relevant range)
     for (coh, (lof, hif_inclusive, df)) in zip(coherence_times[start_ind:end_ind + 1],
@@ -118,10 +120,20 @@ if __name__ == '__main__':
             cand_pjs += list(pj)
             cand_pfulls += list(pfull)
 
-            # Record frequency and significance of successful candidates (combined p-value above 0.01)
+            # Record frequency of successful candidates (combined p-value above 0.01)
             for i in np.where(pfull > 0.01)[0]:
                 freq_ind = freq_inds[i]
                 succ_freqs.append(coh_freqs[freq_ind])
+
+                # Compute and record predicted g_agamma and error bar
+                int_grid, cdf = calculate_cdf(s[freq_ind], z[freq_ind])
+                g = (int_grid[1:] + int_grid[:-1]) / 2
+                dg = int_grid[1:] - int_grid[:-1]
+                pdf = (cdf[1:] - cdf[:-1]) / dg
+                mean = np.sum(pdf * g * dg)
+                std = np.sqrt(np.sum(pdf * g ** 2 * dg) - mean ** 2)
+                succ_gmeans.append(mean)
+                succ_gstds.append(std)
 
                 if VERBOSE:
                     print(f'Successful candidate at {coh_freqs[freq_ind]:.4f} Hz ({sigma[freq_ind]:.2f}-sigma)!')
@@ -133,7 +145,8 @@ if __name__ == '__main__':
                             pstrings.append(f'{pj[i, j]:.3f}')
                         else:
                             pstrings.append(f'{pj[i, j]:.1e}')
-                    print(f'P-values: [' + ', '.join(pstrings) + f'] (Combined: {pfull[i]:.2f})')
+                    print('P-values: [' + ', '.join(pstrings) + f'] (Combined: {pfull[i]:.2f})')
+                    print(f'g_agamma = {mean:.1e} +- {std:.1e} GeV^-1')
                     sys.stdout.flush()
 
     if VERBOSE:
@@ -155,6 +168,8 @@ if __name__ == '__main__':
                  cand_sigmas = cand_sigmas,
                  cand_pjs = cand_pjs,
                  cand_pfulls = cand_pfulls,
-                 succ_freqs = succ_freqs)
+                 succ_freqs = succ_freqs,
+                 succ_gmeans = succ_gmeans,
+                 succ_gstds = succ_gstds)
 
     if VERBOSE: print(f'Done!')
