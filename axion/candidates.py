@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # Store results (only if checking candidates)
     if CHECK_CANDIDATES:
         Path('candidates').mkdir(exist_ok = True)
-        filename = get_dirname()
+        filename = get_dirname(subset = -1)
         np.savez(f'candidates/{filename}',
                  cand_freqs = cand_freqs,
                  cand_p0s = cand_p0s,
