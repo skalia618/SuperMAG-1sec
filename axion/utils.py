@@ -337,14 +337,14 @@ def find_overlap_chunks(coherence_time, coherence_chunk):
 
     return stationarity_chunks
 
-def spectra_freqs(chunk_id):
+def spectra_freqs(chunk_id, window = WINDOW, downsample = DOWNSAMPLE):
     """
     Returns the frequencies at which the spectra for chunk chunk_id are computed
     """
     chunk = CHUNK_LIST[chunk_id]
     chunk_length = chunk[2] - chunk[1]
-    freqs_length = (chunk_length - 6 * WINDOW) // DOWNSAMPLE
-    return (3 * WINDOW + DOWNSAMPLE * np.arange(freqs_length)) / chunk_length
+    freqs_length = (chunk_length - 6 * window) // downsample
+    return (3 * window + downsample * np.arange(freqs_length)) / chunk_length
 
 def calculate_logpdf(g, sf, zf):
     """
