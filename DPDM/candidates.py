@@ -99,17 +99,17 @@ if __name__ == '__main__':
 
                 # Test statistic to compare subset analysis with full-dataset analysis
                 # (Should cancel contribution from true signal)
-                W = (np.einsum('fkij, fkj, fkj -> fki', v, 1 / s, z)
-                     - np.einsum('fkij, fkj, fkj -> fki', vj, 1 / sj, zj))
+                Zeta = (np.einsum('fkij, fkj, fkj -> fki', v, 1 / s, z)
+                        - np.einsum('fkij, fkj, fkj -> fki', vj, 1 / sj, zj))
 
-                # Covariance matrix of W (for no signal)
-                Sigma = (np.einsum('fkab, fkb, fkcb -> fkac', v, 1 / s ** 2, np.conjugate(v))
-                         + np.einsum('fkab, fkb, fkcb -> fkac', vj, 1 / sj ** 2, np.conjugate(vj)))
+                # Covariance matrix of Zeta (for no signal)
+                Xi = (np.einsum('fkab, fkb, fkcb -> fkac', v, 1 / s ** 2, np.conjugate(v))
+                      + np.einsum('fkab, fkb, fkcb -> fkac', vj, 1 / sj ** 2, np.conjugate(vj)))
 
-                # Invert Sigma, use to normalize W, and turn into chi-squared statistic
-                invstd = np.linalg.inv(np.linalg.cholesky(Sigma))
-                w = np.einsum('fkij, fkj -> fki', invstd, W)
-                Qj = 2 * np.sum(np.abs(w) ** 2, axis = (1, 2))
+                # Invert Xi, use to normalize Zeta, and turn into chi-squared statistic
+                invB = np.linalg.inv(np.linalg.cholesky(Xi))
+                zeta = np.einsum('fkij, fkj -> fki', invB, Zeta)
+                Qj = 2 * np.sum(np.abs(zeta) ** 2, axis = (1, 2))
 
                 # For each candidate, turn Qj into p-value
                 # Rather than using chi-squared distribution, we use empirical distribution of Qj

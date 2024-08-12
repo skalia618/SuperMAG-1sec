@@ -2,7 +2,7 @@ import numpy as np
 import os
 from params import *
 from pathlib import Path
-from scipy import stats
+from scipy import stats.norm
 import sys
 from utils import *
 
@@ -29,7 +29,7 @@ def calculate_spectra(ichunk, jchunk):
     power = fft1 * np.conj(fft2) / (len(ichunk) - nans)
 
     # Gaussian filter (with standard deviation WINDOW)
-    filter = stats.norm.pdf(np.arange(-3 * WINDOW, 3 * WINDOW + 1), loc = 0, scale = WINDOW)
+    filter = norm.pdf(np.arange(-3 * WINDOW, 3 * WINDOW + 1), loc = 0, scale = WINDOW)
 
     # Convolve with filter (only at downsampled frequencies)
     smoothed = []

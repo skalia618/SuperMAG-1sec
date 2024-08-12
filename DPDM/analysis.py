@@ -79,13 +79,13 @@ if __name__ == '__main__':
                     subseries = np.append(subseries, np.zeros(coh - len(subseries)))
 
                 # FFT and zoom in on relevant frequency window
-                # If padding goes below 0 Hz or above 1 Hz, then loop around
+                # If padding goes below 0 Hz or above 1 Hz, then wrap around
                 subseries_fft = np.fft.fft(subseries)
                 if start_padded > 0 and end_padded_exclusive < len(subseries_fft):
                     subseries_fft = subseries_fft[start_padded : end_padded_exclusive]
                 elif start_padded < 0:
-                    subseries_fft = np.concatenate((subseries_fft[:end_padded_exclusive],
-                                                    subseries_fft[start_padded:]))
+                    subseries_fft = np.concatenate((subseries_fft[start_padded:],
+                                                    subseries_fft[:end_padded_exclusive]))
                 else:
                     subseries_fft = np.concatenate((subseries_fft[start_padded:],
                                                     subseries_fft[:end_padded_exclusive - len(subseries_fft)]))
@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
             # Singular value decompose nu_k = U_k * S_k * Vh_k
             # u shape: (num_frequencies, 15, 3)
-            # s shape: (num_frequenceis, 3)
+            # s shape: (num_frequencies, 3)
             # vh shape: (num_frequencies, 3, 3)
             u, s, vh = np.linalg.svd(nu, full_matrices = False)
 

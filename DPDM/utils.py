@@ -21,11 +21,11 @@ def get_proj_aux_dir():
     dirname = get_dirname(include_window = False, include_threshold = False, include_boundparams = False)
     return f'proj_aux/{dirname}'
 
-def get_stationarity_chunk_dir(chunk_ind):
+def get_stationarity_chunk_dir(chunk_ind, window = WINDOW):
     """
     Returns spectra directory for chunk chunk_ind
     """
-    dirname = get_dirname(include_threshold = False, include_boundparams = False)
+    dirname = get_dirname(include_threshold = False, include_boundparams = False, window = window)
     return f'spectra/{dirname}/chunk_{chunk_ind:04d}'
 
 def get_analysis_vars_dir(subset = SUBSET):
@@ -306,7 +306,7 @@ def spectra_freqs(chunk_id, window = WINDOW, downsample = DOWNSAMPLE):
     """
     chunk = CHUNK_LIST[chunk_id]
     chunk_length = chunk[2] - chunk[1]
-    freqs_length = (chunk_length - 6 * window) // downsample
+    freqs_length = div_ceil(chunk_length - 6 * window, downsample)
     return (3 * window + downsample * np.arange(freqs_length)) / chunk_length
 
 def calculate_logpdf(eps, sf, zf):

@@ -29,8 +29,8 @@ DOWNSAMPLE = WINDOW // 10
 THRESHOLD = 0.03
 
 # Range of frequencies to compute bound for
-MIN_FREQ = 0.01
-MAX_FREQ = 0.5
+MIN_FREQ = 1e-3
+MAX_FREQ = 0.98
 
 # Confidence level of bound (and candidate analysis)
 CONFIDENCE = 0.95
@@ -48,7 +48,11 @@ TAIL_START = 10
 # Whether or not to print progress updates
 VERBOSE = True
 
-def get_dirname(include_window = True, include_threshold = True, include_boundparams = True, subset = SUBSET):
+def get_dirname(include_window = True,
+                include_threshold = True,
+                include_boundparams = True,
+                subset = SUBSET,
+                window = WINDOW):
     if STATIONARITY_TIME in ['daily', 'weekly', 'monthly', 'annual']:
         dirname = STATIONARITY_TIME
     else:
@@ -62,7 +66,7 @@ def get_dirname(include_window = True, include_threshold = True, include_boundpa
     if LMAX != 4:
         dirname += f'_lmax{LMAX}'
     if include_window:
-        dirname += f'_window{WINDOW}'
+        dirname += f'_window{window}'
     if include_threshold and THRESHOLD != 0.03:
         dirname += f'_threshold{THRESHOLD}'
     if include_boundparams and CONFIDENCE != 0.95:

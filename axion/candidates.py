@@ -97,14 +97,14 @@ if __name__ == '__main__':
 
                 # Test statistic to compare subset analysis with full-dataset analysis
                 # (Should cancel contribution from true signal)
-                W = z / s - zj / sj
+                Zeta = z / s - zj / sj
 
-                # Variance of W (for no signal)
-                Sigma = s ** -2 + sj ** -2
+                # Variance of Zeta (for no signal)
+                Xi = s ** -2 + sj ** -2
 
-                # Normalize W by Sigma, and turn into chi-squared statistic
-                w = W / np.sqrt(Sigma)
-                Qj = 2 * np.sum(np.abs(w) ** 2, axis = 1)
+                # Normalize Zeta by Xi, and turn into chi-squared statistic
+                zeta = Zeta / np.sqrt(Xi)
+                Qj = 2 * np.sum(np.abs(zeta) ** 2, axis = 1)
 
                 # For each candidate, turn Qj into p-value
                 # Rather than using chi-squared distribution, we use empirical distribution of Qj
