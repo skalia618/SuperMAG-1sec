@@ -5,6 +5,11 @@ raw/
 spectra/
 bounds/
 candidates/
+gaussianity/
+stationarity_times/
+zdist/
+zetadist/
 *.sh
+*.pdf
 slurm-*
 *~
