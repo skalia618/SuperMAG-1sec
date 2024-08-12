@@ -78,7 +78,7 @@ for ind in np.arange(0, len(freqs), LOG_DOWNSAMPLE):
         smoothed_zsqrs2[ind // LOG_DOWNSAMPLE] = np.sum((zsqrs2[1:] + zsqrs2[:-1]) / 2 * filter * dfreq)
         smoothed_zquars2[ind // LOG_DOWNSAMPLE] = np.sum((zquars2[1:] + zquars2[:-1]) / 2 * filter * dfreq)
 mask = np.where(smoothed_zsqrs1 != 0)[0]
-print('Smoothing complete')
+print('\nSmoothing complete\n')
 sys.stdout.flush()
 
 # Setup main axes
@@ -120,3 +120,4 @@ ax.legend()
 Path('gaussianity').mkdir(parents = True, exist_ok = True)
 fig.tight_layout()
 fig.savefig(f'gaussianity/{DM}_{dirname1}_{dirname2}.pdf')
+print('Done!')
