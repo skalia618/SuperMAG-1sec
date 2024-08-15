@@ -2,7 +2,7 @@ import numpy as np
 import os
 from params import *
 from pathlib import Path
-from scipy import stats.norm
+from scipy.stats import norm
 import sys
 from utils import *
 
