@@ -62,7 +62,7 @@ supermag = np.loadtxt('DPDM_constraints/supermag_DPDM.txt').T
 line, = ax.plot(Hz_to_eV * supermag[0], supermag[1], color = 'darkorange', label = 'SuperMAG 1-min, smoothed')
 line.set_dashes([2, 2])
 snipehunt = np.loadtxt('DPDM_constraints/snipehunt_DPDM.txt').T
-line, = ax.plot(Hz_to_eV * snipehunt[0], snipehunt[1], color = 'limegreen', label = 'SNIPE Hunt')
+line, = ax.plot(Hz_to_eV * snipehunt[0], snipehunt[1], color = 'limegreen', label = 'SNIPE Hunt, smoothed')
 line.set_dashes([10, 5])
 leoT = np.loadtxt('DPDM_constraints/leoT.txt').T
 line, = ax.plot(leoT[0], leoT[1], color = 'crimson', label = 'Leo T')

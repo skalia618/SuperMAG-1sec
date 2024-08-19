@@ -62,7 +62,7 @@ supermag = np.loadtxt('axion_constraints/supermag_axion.txt').T
 line, = ax.plot(Hz_to_eV * supermag[0], supermag[1], color = 'darkorange', label = 'SuperMAG 1-min, smoothed')
 line.set_dashes([2, 2])
 snipehunt = np.loadtxt('axion_constraints/snipehunt_axion.txt').T
-line, = ax.plot(Hz_to_eV * snipehunt[0], snipehunt[1], color = 'limegreen', label = 'SNIPE Hunt')
+line, = ax.plot(Hz_to_eV * snipehunt[0], snipehunt[1], color = 'limegreen', label = 'SNIPE Hunt, smoothed')
 line.set_dashes([10, 5])
 chandra = np.loadtxt('axion_constraints/chandra.txt').T
 line, = ax.plot(chandra[0], chandra[1], color = 'crimson', label = 'Chandra')
