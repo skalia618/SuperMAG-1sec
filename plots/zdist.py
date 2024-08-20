@@ -21,7 +21,7 @@ LEGEND = True
 plt.rcParams.update({'text.usetex': True, 'font.family': 'serif', 'font.size': 12})
 
 # Initiate figure
-fig, ax = plt.subplots(figsize = (6., 6.))
+fig, ax = plt.subplots(figsize = (6., 4.))
 
 # Calculate coherence times and their respective frequency bins
 coherence_times = coherence_times(TOTAL_TIME)

@@ -9,7 +9,7 @@ I = np.load('../axion/proj_aux/weekly_1998_2020/I.npy')
 plt.rcParams.update({'text.usetex': True, 'font.family': 'serif', 'font.size': 12, 'axes.axisbelow': False})
 
 # Initiate figure
-fig, ax = plt.subplots(figsize = (6., 6.))
+fig, ax = plt.subplots(figsize = (6., 4.))
 
 # Setup main axes
 xlim1 = 0 # in s
