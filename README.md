@@ -1,5 +1,5 @@
 # SuperMAG-1sec
-Analysis code used in [arXiv:24XX.XXXXX](https://arxiv.org/pdf/24XX.XXXXX) to search SuperMAG high-fidelity dataset for dark-photon and axion dark matter
+Analysis code used in [arXiv:2408.16045](https://arxiv.org/pdf/2408.16045) to search SuperMAG high-fidelity dataset for dark-photon and axion dark matter
 
 (Based on analyses of low-fidelity dataset in [arXiv:2108.08852](https://arxiv.org/pdf/2108.08852) and [arXiv:2112.09620](https://arxiv.org/pdf/2112.09620))
 
